@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+
+    <title>辐射度量学</title>
+
+    <link rel="stylesheet" href="/css/stylesheet.css">
+
+    <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [
+                ['$', '$'],
+                ['\\(', '\\)']
+            ],
+            displayMath: [
+                ['$$', '$$'],
+                ['\[', '\]']
+            ],
+            processEscapes: true,
+            processEnvironments: true,
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+            TeX: {
+                equationNumbers: {
+                    autoNumber: "AMS"
+                },
+                extensions: ["AMSmath.js", "AMSsymbols.js"]
+            }
+        }
+    });
+    MathJax.Hub.Queue(function () {
+        
+        
+        
+        var all = MathJax.Hub.getAllJax(),
+            i;
+        for (i = 0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+
+    MathJax.Hub.Config({
+        
+        TeX: {
+            equationNumbers: {
+                autoNumber: "AMS"
+            }
+        }
+    });
+</script>
+</head>
+
+<body>
+    <section id="page-title">
+        <h1><a href="/">编程杂记</a></h1>
+    </section>
+
+<section class="blog-post">
+    <h1>辐射度量学</h1>
+    <div class="blog-post-subheader">
+        February 20, 2019
+    </div>
+    <div class="blog-post-content">
+        
+
+<p>辐射度量学是研究电磁辐射在环境中如何传播的.</p>
+
+<p>介绍电磁辐射的四个关键量:</p>
+
+<ol>
+<li>Flux (辐射通量</li>
+<li>Intensity (辐射强度</li>
+<li>Irradiance (辐照度</li>
+<li>Radiance (辐射率</li>
+</ol>
+
+<p>认识一个概念 光谱能量分布(spectral power distribution), 描述不同波长光数量(the amount of light)</p>
+
+<h2 id="radiometry-辐射度量学">Radiometry (辐射度量学)</h2>
+
+<p>遵循基本的辐射度量的原则, 且仅需要几何光学这个级别,  波动光学不考虑.</p>
+
+<ol>
+<li>线性关系, 两个输入, 大部分只需要叠加</li>
+<li>能量守恒, 光通过表面, 或者参与媒介</li>
+<li>没有偏振</li>
+<li>没有荧光或磷光</li>
+<li>恒稳态</li>
+</ol>
+
+<p>采用几何光学最大的缺点 衍射 和 干扰效应 很难实现.</p>
+
+<h3 id="基本量">基本量</h3>
+
+<h4 id="辐射能-radiant-energy">辐射能 (Radiant energy)</h4>
+
+<p>符号: $Q$, 单位: $J$, 理解为光子总的击中数</p>
+
+<p>$$
+Q = \frac{hc}{\lambda}
+$$</p>
+
+<p>$h​$: 普朗克常量; $c​$: 光速; $\lambda​$: 光子的波长</p>
+
+<h4 id="辐射通量-radiant-flux">辐射通量(Radiant Flux)</h4>
+
+<p>符号:$\Phi$, 单位: $J \cdot s^{-1}$, 理解为光子每秒的击中数,</p>
+
+<p>$$
+\Phi = \lim_ {\Delta t \to 0} \frac{\Delta Q}{\Delta t} = \frac{dQ}{dt}.
+$$</p>
+
+<p>在时间段内积分可获得该时间段内总的辐射能,</p>
+
+<p>$$
+Q = \int_ {t_0}^{t1}\Phi(t)dt.
+$$</p>
+
+<h4 id="辐照度-又称辐射入射度-irradiance">辐照度, 又称辐射入射度 (Irradiance)</h4>
+
+<p>符号: $E$, 单位: $J \cdot s^{-1} \cdot m^{-2}$, 理解为光子每秒每单位面积的击中数,</p>
+
+<p>$$
+E(p) = \lim_{\Delta A \to 0} \frac{\Delta \Phi (p)}{\Delta A} = \frac{d \Phi(p)}{dA}.
+$$</p>
+
+<blockquote>
+<p>Radiant flux <em>received</em> by a <em>surface</em> per unit area. This is sometimes also confusingly called &quot;intensity&quot;.</p>
+</blockquote>
+
+<h4 id="辐出度-又称辐射出射度-radiant-exitance">辐出度, 又称辐射出射度(Radiant Exitance)</h4>
+
+<p>符号: $M$, 单位: $J \cdot s^{-1} \cdot m^{-2}$, 理解为光子每秒每单位面积射出数,</p>
+
+<p>$$
+\begin{align*}
+\Phi &amp;= \int_{A} E(p) dA. \newline
+E &amp;= \frac{\Phi cos\theta}{A}
+\end{align*}
+$$</p>
+
+<p>图像生成是估计图像中每个点的辐照度.</p>
+
+<h4 id="辐射强度-radiant-intensity">辐射强度(Radiant Intensity)</h4>
+
+<p>符号: $I​$, 单位: $J \cdot s^{-1} \cdot sr^{-1}$,</p>
+
+<p>$$
+\begin{align*}
+I &amp;= \lim_{\Delta \omega \to 0}\frac{\Delta \Phi}{\Delta \omega} = \frac{d\Phi}{d\omega}.
+\newline
+\Phi &amp;= \int_{\Omega} I(\omega)d\omega.
+\end{align*}
+$$</p>
+
+<h4 id="辐射率-radiance">辐射率(Radiance)</h4>
+
+<p>每单位立体角每单位投射表面的辐射通量 $W \cdot sr^{-1} \cdot m^{-2}$.<br />
+辐照度和辐出度给我们在 $p$ 点微分曲面上的微分能量, 但是这两个量都不涉及到能量在方向上的分布, 辐射率衡量立体角上的辐照度和辐出度.</p>
+
+<p>$$
+\begin{align*}
+L(p, \omega) &amp;= \lim_{\Delta\omega \to 0}\frac{\Delta E_ \omega(p)}{\Delta\omega} = \frac{dE_\omega(p)}{d\omega}.\newline
+L &amp;= \frac{d\Phi}{d\omega dA^\perp}
+\end{align*}
+$$</p>
+
+<h3 id="入射-出射-辐射率函数-incident-exitant-radiance-functions">[入射/出射] 辐射率函数(Incident/Exitant Radiance Functions)</h3>
+
+<h3 id="亮度和光度测定学-luminance-and-photometry">亮度和光度测定学(Luminance and Photometry)</h3>
+
+<p>所有的辐射度的度量都有对应的光度度量, 光度测定学研究的是人类视觉系统可见的电磁辐射.</p>
+
+<p><strong>Spectral response curve $V(\lambda)$</strong> 描述了人眼灵敏度与各种不同波长之间的关系. <strong>Luminance $Y$</strong> 描述一个光谱能量分布对观察者来说的明亮程度.</p>
+
+<p>$$
+\begin{align*}
+Y = \int_{\lambda}L(\lambda)V(\lambda)d\lambda.\newline
+Y = 683 \int_{\lambda}L(\lambda)Y(\lambda)d\lambda.
+\end{align*}
+$$</p>
+
+<h3 id="辐射积分-radiometric-integrals">辐射积分(Radiometric Integrals)</h3>
+
+<p>在 $p$ 点且表面法线为 $n$ 出的辐照度就是 在 $\Omega$ 方向集合上的辐射率.</p>
+
+<p>$$
+E(p, n) = \int_ {\Omega} L_ i(p, \omega)\vert cos\theta \vert d\omega,
+$$</p>
+
+<p>其中 $L_i(p, w)$是入射辐射率函数,  $cos\theta$ 在此处的意义与 $dA^\perp$ 在辐射率中的定义一致, $\theta$ 是 $\omega$ 与表面发现 $n$ 的夹角.</p>
+
+<h4 id="投射立体角上的积分">投射立体角上的积分</h4>
+
+<hr />
+
+<p><strong>References</strong></p>
+
+<ol>
+<li><a href="http://15462.courses.cs.cmu.edu/fall2018/lecture/radiometry">http://15462.courses.cs.cmu.edu/fall2018/lecture/radiometry</a></li>
+<li><a href="https://en.wikipedia.org/wiki/Solid_angle">https://en.wikipedia.org/wiki/Solid_angle</a></li>
+</ol>
+
+    </div>
+</section>
+
+    </body>
+</html>

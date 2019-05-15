@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
+
+    <title>软光渲流程</title>
+
+    <link rel="stylesheet" href="/css/stylesheet.css">
+
+    <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [
+                ['$', '$'],
+                ['\\(', '\\)']
+            ],
+            displayMath: [
+                ['$$', '$$'],
+                ['\[', '\]']
+            ],
+            processEscapes: true,
+            processEnvironments: true,
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
+            TeX: {
+                equationNumbers: {
+                    autoNumber: "AMS"
+                },
+                extensions: ["AMSmath.js", "AMSsymbols.js"]
+            }
+        }
+    });
+    MathJax.Hub.Queue(function () {
+        
+        
+        
+        var all = MathJax.Hub.getAllJax(),
+            i;
+        for (i = 0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+
+    MathJax.Hub.Config({
+        
+        TeX: {
+            equationNumbers: {
+                autoNumber: "AMS"
+            }
+        }
+    });
+</script>
+</head>
+
+<body>
+    <section id="page-title">
+        <h1><a href="/">编程杂记</a></h1>
+    </section>
+
+<section class="blog-post">
+    <h1>软光渲流程</h1>
+    <div class="blog-post-subheader">
+        May 16, 2019
+    </div>
+    <div class="blog-post-content">
+        
+
+<h1 id="软光渲流程">软光渲流程</h1>
+
+<p>场景管理系统识别并创建那些<strong>可见</strong>的物体. 当所有的物体都创建完毕, 我们遍历每个物体上的几何图元并把他们送往渲染器去绘制图像.</p>
+
+<pre><code class="language-cpp">void DrawElements()
+{
+    ApplyVertexShader();
+    (this-&gt;*m_aoDrawFunction[m_pkGeometry-&gt;Type])();
+}
+</code></pre>
+
+<h2 id="vertex-shaders">Vertex Shaders</h2>
+
+<p>三角形每个点都有<strong>位置</strong>及一些其他的信息. 假设我们使用动态光照(dynamic lighting), 不仅要计算每个点的点发现, 还需要点的颜色值, 实际上这些颜色值可能还会与贴图的颜色值混合, 这样做点里面又需要贴图的UV坐标了.</p>
+
+<p>一般来说传入 Vertex Program 的是模型空间的坐标, 但并非必须. 该程序最低限度地计算裁剪空间里的点坐标, 法线以及其他的属性, 其结果输出到后面的剪裁和光栅化阶段.</p>
+
+<pre><code class="language-cg">void VertexColor3VProgram(
+	in float4 kModelPosition : POSITION,
+	in float3 kModelColor : COLOR,
+	out float4 kClipPosition : POSITION,
+	out float3 kVertexColor : COLOR,
+	uniform float4x4 WVPMatrix)
+{
+    kClipPosition = mul(kModelPosition, WVPMatrix);
+    kVertexColor = kModelColor;
+}
+</code></pre>
+
+<p>上述程序有两个输入(模型空间点坐标, 点色值), 两个输出(剪裁空间点坐标, 点色值), 其中<code>WVPMatrix</code> 表示齐次变换(从模型空间到剪裁空间).</p>
+
+<p>第一行, 坐标变换,</p>
+
+<p>$$
+\begin{align*}
+\boldsymbol{H}_ {wvp} &amp;= \boldsymbol{H}_ {world} \boldsymbol{H}_ {view} \boldsymbol{H}_ {proj}
+\newline
+\boldsymbol{X}_ {clip} &amp;= \boldsymbol{X}_ {model}\boldsymbol{H}_ {wvp}
+\end{align*}
+$$</p>
+
+<p>其中 $\boldsymbol{X}_{model}$ 是 $1 \times 4$ 的向量, $w$ 分量值为 $1$,</p>
+
+<p>第二行, 直接传递点的颜色值.</p>
+
+<h4 id="question">Question</h4>
+
+<ol>
+<li>这里的信息是不是每次都要全部计算出来呢?</li>
+<li>什么是 动态光照? 静态光照呢?</li>
+<li>传入模型空间坐标并非必须?</li>
+<li>如何最低限度计算?</li>
+</ol>
+
+<h2 id="back-face-culling">Back-Face Culling</h2>
+
+<p>背面剔除是可选项, 如果背面剔除被禁用, 那么将直接进入剪裁阶段, 启用则会剔除所有背面三角形. 然而一些原因也会使前面的三角形被剔除.</p>
+
+<p>$$
+\begin{align*}
+n &amp;= (\boldsymbol{P}_1 - \boldsymbol{P}_0) \times (\boldsymbol{P}_2 - \boldsymbol{P}_0)
+\newline
+\delta &amp;= (\boldsymbol{E} - \boldsymbol{P}_0) \cdot n &gt; 0
+\end{align*}
+$$</p>
+
+<p>$d'$ 分量方向(视见方向)的偏移会导致上式错误的结果, 这里采用 $(r', u', w')$,</p>
+
+<p>$$
+\begin{align*}
+\boldsymbol{E}_1 &amp;= (r_1' - r_0', u_1', - u_0', w_1' - w_0'), \newline
+\boldsymbol{E}_2 &amp;= (r_2' - r_0', u_2', - u_0', w_2' - w_0'), \newline
+\boldsymbol{N} &amp;= \boldsymbol{E}_1 \times \boldsymbol{E}_2, \newline
+\delta_1 &amp;= \sigma(\boldsymbol{N} \cdot (r_0', u_0', w_0'))
+\end{align*}
+$$</p>
+
+<p>等价于以下行列式,</p>
+
+<p>$$
+\delta_1 = \sigma det
+\left[ \begin{array}{ccc}
+r_0' &amp; u_0' &amp; w_0' \newline
+r_1' &amp; u_1' &amp; w_1' \newline
+r_2' &amp; u_2' &amp; w_2'
+\end{array} \right] =
+\sigma(w_0'(r_1'u_2' - r_2'u_1') - w_1'(r_0'u_2' - r_2'u_0') + w_2'(r_0'u_1' - r_1'u_0'))
+$$</p>
+
+<p>浮点数的舍入误差同样也会导致错误的分类, <strong>这里没看懂</strong>,</p>
+
+<h2 id="clipping">Clipping</h2>
+
+<p>一旦三角形被确认为前置的(front-facing), 接下来就会对其在视锥体内进行剪裁. 剪裁有两种算法:</p>
+
+<ol>
+<li>逐面剪裁</li>
+<li>多边形相交剪裁</li>
+</ol>
+
+<p>多边形剪裁需要维护一个凸多边形结构, 该多边形与视锥体的六个面做剪裁.</p>
+
+<pre><code class="language-cpp">void ClipPolygon(int&amp; riQuantity,
+                 int aiIndex[SOFT_MAX_CLIP_INDICES],
+                 int aiEdge[SOFT_MAX_CLIP_INDICES]);
+</code></pre>
+
+<h2 id="rasterizing">Rasterizing</h2>
+
+<pre><code class="language-cpp">int iNumTriangles = iQuantity - 2;
+for (int j = 1; j &lt;= iNumTriangles; ++j)
+{
+    RasterizeTriangle(aiIndex[0], aiIndex[1], aiIndex[j+1]);
+}
+</code></pre>
+
+<p><code>RasterizeTriangle</code> 函数负责画每个三角形所包含的像素. 函数的第一部分访问剪裁空间三角形点的坐标, 且将他们投影到屏幕空间.</p>
+
+<h2 id="edge-buffers">Edge Buffers</h2>
+
+<p>边缓冲区算法旨在确定每一条扫描线上的起始和结束 x 值, 扫描线包含了三角形覆盖的像素. 需要特别注意两三角形共边的情况,</p>
+
+<p>Bresenham 直线算法不能保证每次覆盖的像素一致,</p>
+
+<ol>
+<li>中点算法</li>
+<li>根据最小 y 值端点和最大 y 值端点开始遍历</li>
+</ol>
+
+<h2 id="scan-line-processing">Scan Line Processing</h2>
+
+<p>输入的是一个三角形的 edge buffer, 输出是这个三角形覆盖的像素点在屏幕上的位置, 色值.</p>
+
+<pre><code class="language-cpp">int ymin = &lt;minimum y for edge buffers&gt;;
+int ymax = &lt;maximum y for edge buffers&gt;;
+
+for (y = ymin; y &lt;= ymax; ++y)
+{
+    int xmin = &lt;minimum x for scan line y&gt;;
+    int xmax = &lt;maximum x for scan line y&gt;;
+    
+    draw the pixel(xmin, y);
+    
+    interpolate attributes at (x, y) for xmin &lt; x &lt; xmax;
+    
+    for (x = xmin + 1; x &lt; xmax; ++x)
+    {
+        draw the pixel(x, y);
+    }
+    
+    draw the pixel (xmax, y);
+}
+</code></pre>
+
+<p>扫面线算法的问题, 共享边绘制两次, 不透明的还好, 如果是透明的存在 Alpha 混合的问题, 视觉效果会很奇怪. 其中的一个解决方案是 <strong>Top Left Rule</strong> (当像素点与多边形的左或上边重合时, 填充时需要着色; 相反属于右或下边, 则不需要着色).</p>
+
+<h4 id="question-1">Question</h4>
+
+<ol>
+<li>DirectX 和 OpenGL 的这块的机制是什么样的?</li>
+</ol>
+
+<h2 id="pixel-shaders">Pixel Shaders</h2>
+
+<p>像素着色器作用于当前像素, 输入数据有,</p>
+
+<ol>
+<li>来自 Vertex Program 后的光栅化的和插值的输出数据,</li>
+<li>达成期望视觉效果所需的常量</li>
+</ol>
+
+<p>像素着色器须返回 RGBA 格式的颜色值.</p>
+
+<p>像素着色器往往是渲染系统的瓶颈, 且多数系统对填充率有所限制, 并占用大量的像素处理时间.</p>
+
+<h4 id="question-2">Question</h4>
+
+<ol>
+<li>Vertex Program 光栅化和插值的输出数据是什么样的?</li>
+<li>填充率是什么?</li>
+</ol>
+
+<h2 id="stencil-buffering">Stencil Buffering</h2>
+
+<p>模板缓冲区存储和检索像素信息, 通过像素模板缓冲区数据值与参考值之间的比较, 可有效地剔除或保留相关像素.</p>
+
+<p>模板缓冲区用于遮罩图像中的像素, 以产生特殊效果.  掩码控制是否绘制像素.</p>
+
+<h2 id="depth-buffering">Depth Buffering</h2>
+
+<p>深度缓冲区存储深度信息, 以控制渲染哪些多边形区域</p>
+
+<h2 id="alpha-blending">Alpha Blending</h2>
+
+<p>一旦像素通过模板测试和深度测试, 即可对其执行绘制操作. Pixel Program 被调用后将生成源颜色值; 当前颜色缓冲区中的数据值则称作目标颜色值. 如果 Alpha 混合被关闭, 那么直接将源颜色值写入 Color Buffer; 反之, 则根据混合参数将源颜色值与目标颜色值进行混合.</p>
+
+<h2 id="color-masking">Color Masking</h2>
+
+<p>颜色蒙版</p>
+
+    </div>
+</section>
+
+    </body>
+</html>
