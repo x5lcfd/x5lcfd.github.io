@@ -1,17 +1,32 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	
+	<title>软光渲流程</title>
+	
+	<meta name="description" content="">
+	<meta name="image" content="">
+	
+	<meta itemprop="name" content="软光渲流程">
+	<meta itemprop="description" content="">
+	<meta itemprop="image" content="">
+	
+	<meta name="og:title" content="软光渲流程">
+	<meta name="og:description" content="">
+	
+	<meta name="og:url" content="https://x5lcfd.github.io/posts/pipeline/">
+	<meta name="og:site_name" content="软光渲流程">
+	<meta name="og:type" content="article">
+	
+	<meta name="article:tag" content="">
+	<link rel="stylesheet" type="text/css" href="https://x5lcfd.github.io/css/style.css">
+	
+	
 
-    <link href="https://fonts.googleapis.com/css?family=Ubuntu" rel="stylesheet">
-
-    <title>软光渲流程</title>
-
-    <link rel="stylesheet" href="/css/stylesheet.css">
-
-    <script type="text/javascript" async
+	<script type="text/javascript" async
     src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
     MathJax.Hub.Config({
         tex2jax: {
@@ -57,17 +72,27 @@
 </head>
 
 <body>
-    <section id="page-title">
-        <h1><a href="/">编程杂记</a></h1>
-    </section>
 
-<section class="blog-post">
-    <h1>软光渲流程</h1>
-    <div class="blog-post-subheader">
-        May 16, 2019
-    </div>
-    <div class="blog-post-content">
-        
+	<header>
+		
+		<a href="https://x5lcfd.github.io/" style="float: left;color:#ff3b30;">代码杂记</a>
+		
+		
+		
+		<a href="https://x5lcfd.github.io/posts/index.xml" style="color:#777;float: right;"><svg
+				xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+				stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+				class="feather feather-rss">
+				<path d="M4 11a9 9 0 0 1 9 9"></path>
+				<path d="M4 4a16 16 0 0 1 16 16"></path>
+				<circle cx="5" cy="19" r="1"></circle>
+			</svg></a>
+	</header>
+
+<div class="content">
+  <h1>软光渲流程</h1>
+  <aside></aside>
+  <p>
 
 <h1 id="软光渲流程">软光渲流程</h1>
 
@@ -87,11 +112,11 @@
 <p>一般来说传入 Vertex Program 的是模型空间的坐标, 但并非必须. 该程序最低限度地计算裁剪空间里的点坐标, 法线以及其他的属性, 其结果输出到后面的剪裁和光栅化阶段.</p>
 
 <pre><code class="language-cg">void VertexColor3VProgram(
-	in float4 kModelPosition : POSITION,
-	in float3 kModelColor : COLOR,
-	out float4 kClipPosition : POSITION,
-	out float3 kVertexColor : COLOR,
-	uniform float4x4 WVPMatrix)
+    in float4 kModelPosition : POSITION,
+    in float3 kModelColor : COLOR,
+    out float4 kClipPosition : POSITION,
+    out float3 kVertexColor : COLOR,
+    uniform float4x4 WVPMatrix)
 {
     kClipPosition = mul(kModelPosition, WVPMatrix);
     kVertexColor = kModelColor;
@@ -268,9 +293,15 @@ for (y = ymin; y &lt;= ymax; ++y)
 <h2 id="color-masking">Color Masking</h2>
 
 <p>颜色蒙版</p>
+</p>
+</div>
 
-    </div>
-</section>
 
-    </body>
+  <p>Written on May 16, 2019.</p>
+
+
+<footer>
+	<p>&copy; 2019 All rights reserved.</p>
+</footer>
+</body>
 </html>
