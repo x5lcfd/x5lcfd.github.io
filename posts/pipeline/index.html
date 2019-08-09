@@ -1,98 +1,52 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cn">
+    <head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	
-	<title>软光渲流程</title>
-	
-	<meta name="description" content="">
-	<meta name="image" content="">
-	
-	<meta itemprop="name" content="软光渲流程">
-	<meta itemprop="description" content="">
-	<meta itemprop="image" content="">
-	
-	<meta name="og:title" content="软光渲流程">
-	<meta name="og:description" content="">
-	
-	<meta name="og:url" content="https://x5lcfd.github.io/posts/pipeline/">
-	<meta name="og:site_name" content="软光渲流程">
-	<meta name="og:type" content="article">
-	
-	<meta name="article:tag" content="">
-	<link rel="stylesheet" type="text/css" href="https://x5lcfd.github.io/css/style.css">
-	
-	
+		<title>软光渲流程 &middot; 编程杂记</title>
 
-	<script type="text/javascript" async
-    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [
-                ['$', '$'],
-                ['\\(', '\\)']
-            ],
-            displayMath: [
-                ['$$', '$$'],
-                ['\[', '\]']
-            ],
-            processEscapes: true,
-            processEnvironments: true,
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-            TeX: {
-                equationNumbers: {
-                    autoNumber: "AMS"
-                },
-                extensions: ["AMSmath.js", "AMSsymbols.js"]
-            }
-        }
-    });
-    MathJax.Hub.Queue(function () {
-        
-        
-        
-        var all = MathJax.Hub.getAllJax(),
-            i;
-        for (i = 0; i < all.length; i += 1) {
-            all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-    });
-
-    MathJax.Hub.Config({
-        
-        TeX: {
-            equationNumbers: {
-                autoNumber: "AMS"
-            }
-        }
-    });
-</script>
-</head>
-
-<body>
-
-	<header>
 		
-		<a href="https://x5lcfd.github.io/" style="float: left;color:#ff3b30;">代码杂记</a>
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
 		
-		
-		
-		<a href="https://x5lcfd.github.io/posts/index.xml" style="color:#777;float: right;"><svg
-				xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-				stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-				class="feather feather-rss">
-				<path d="M4 11a9 9 0 0 1 9 9"></path>
-				<path d="M4 4a16 16 0 0 1 16 16"></path>
-				<circle cx="5" cy="19" r="1"></circle>
-			</svg></a>
-	</header>
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
 
-<div class="content">
-  <h1>软光渲流程</h1>
-  <aside></aside>
-  <p>
+		
+		<link href="" rel="alternate" type="application/rss+xml" title="编程杂记" />
+	</head>
+
+    <body>
+        		<nav class="nav">
+			<div class="nav-container">
+				<a href="/">
+					<h2 class="nav-title">编程杂记</h2>
+				</a>
+				<ul>
+    <li><a href="/about">About</a></li>
+    <li><a href="/">Posts</a></li>
+</ul>
+			</div>
+		</nav>
+
+        
+
+<main>
+	<div class="post">
+		<div class="post-info">
+    <span>Written by</span>
+        xingouy
+        <br>
+        <span>on&nbsp;</span><time datetime="2019-05-16 03:04:53 &#43;0800 CST">May 16, 2019</time>
+</div>
+		<h1 class="post-title">软光渲流程</h1>
+<div class="post-line"></div>
+
+		
+
+		
 
 <h1 id="软光渲流程">软光渲流程</h1>
 
@@ -112,11 +66,11 @@
 <p>一般来说传入 Vertex Program 的是模型空间的坐标, 但并非必须. 该程序最低限度地计算裁剪空间里的点坐标, 法线以及其他的属性, 其结果输出到后面的剪裁和光栅化阶段.</p>
 
 <pre><code class="language-cg">void VertexColor3VProgram(
-    in float4 kModelPosition : POSITION,
-    in float3 kModelColor : COLOR,
-    out float4 kClipPosition : POSITION,
-    out float3 kVertexColor : COLOR,
-    uniform float4x4 WVPMatrix)
+	in float4 kModelPosition : POSITION,
+	in float3 kModelColor : COLOR,
+	out float4 kClipPosition : POSITION,
+	out float3 kVertexColor : COLOR,
+	uniform float4x4 WVPMatrix)
 {
     kClipPosition = mul(kModelPosition, WVPMatrix);
     kVertexColor = kModelColor;
@@ -293,15 +247,24 @@ for (y = ymin; y &lt;= ymax; ++y)
 <h2 id="color-masking">Color Masking</h2>
 
 <p>颜色蒙版</p>
-</p>
-</div>
 
 
-  <p>Written on May 16, 2019.</p>
+		
+	</div>
+
+	<div class="pagination">
+		<a href="/posts/radiometry/" class="left arrow">&#8592;</a>
+
+		<a href="#" class="top">Top</a>
+	</div>
+</main>
 
 
-<footer>
-	<p>&copy; 2019 All rights reserved.</p>
-</footer>
-</body>
+        		<footer>
+			<span>
+			&copy; <time datetime="2019-08-10 00:15:39.4245366 &#43;0800 CST m=&#43;0.096002401">2019</time> . Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
+
+    </body>
 </html>

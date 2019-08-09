@@ -3,34 +3,34 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://x5lcfd.github.io/posts/pipeline/</loc>
+    <loc>localhost:1313/posts/</loc>
+    <lastmod>2019-05-16T03:04:53+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>localhost:1313/</loc>
+    <lastmod>2019-05-16T03:04:53+08:00</lastmod>
+    <priority>0</priority>
+  </url>
+  
+  <url>
+    <loc>localhost:1313/posts/pipeline/</loc>
     <lastmod>2019-05-16T03:04:53+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://x5lcfd.github.io/posts/radiometry/</loc>
+    <loc>localhost:1313/posts/radiometry/</loc>
     <lastmod>2019-02-20T02:40:18+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://x5lcfd.github.io/categories/</loc>
+    <loc>localhost:1313/categories/</loc>
     <priority>0</priority>
   </url>
   
   <url>
-    <loc>https://x5lcfd.github.io/posts/</loc>
-    <lastmod>2019-05-16T03:04:53+08:00</lastmod>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://x5lcfd.github.io/tags/</loc>
-    <priority>0</priority>
-  </url>
-  
-  <url>
-    <loc>https://x5lcfd.github.io/</loc>
-    <lastmod>2019-05-16T03:04:53+08:00</lastmod>
+    <loc>localhost:1313/tags/</loc>
     <priority>0</priority>
   </url>
   

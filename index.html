@@ -1,118 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-cn">
+    <head>
+	<meta name="generator" content="Hugo 0.56.3" />
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+			<meta name="description" content="">
 
-<head>
-	<meta name="generator" content="Hugo 0.40.1" />
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	
-	<title>代码杂记</title>
-	
-	<meta name="description" content="">
-	<meta name="image" content="">
-	
-	<meta itemprop="name" content="代码杂记">
-	<meta itemprop="description" content="">
-	<meta itemprop="image" content="">
-	
-	<meta name="og:title" content="代码杂记">
-	<meta name="og:description" content="">
-	
-	<meta name="og:url" content="https://x5lcfd.github.io/">
-	<meta name="og:site_name" content="代码杂记">
-	<meta name="og:type" content="article">
-	
-	<meta name="article:tag" content="">
-	<link rel="stylesheet" type="text/css" href="https://x5lcfd.github.io/css/style.css">
-	
-	
+		<title>编程杂记</title>
 
-	<script type="text/javascript" async
-    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
-    MathJax.Hub.Config({
-        tex2jax: {
-            inlineMath: [
-                ['$', '$'],
-                ['\\(', '\\)']
-            ],
-            displayMath: [
-                ['$$', '$$'],
-                ['\[', '\]']
-            ],
-            processEscapes: true,
-            processEnvironments: true,
-            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre'],
-            TeX: {
-                equationNumbers: {
-                    autoNumber: "AMS"
-                },
-                extensions: ["AMSmath.js", "AMSsymbols.js"]
-            }
-        }
-    });
-    MathJax.Hub.Queue(function () {
-        
-        
-        
-        var all = MathJax.Hub.getAllJax(),
-            i;
-        for (i = 0; i < all.length; i += 1) {
-            all[i].SourceElement().parentNode.className += ' has-jax';
-        }
-    });
-
-    MathJax.Hub.Config({
-        
-        TeX: {
-            equationNumbers: {
-                autoNumber: "AMS"
-            }
-        }
-    });
-</script>
-</head>
-
-<body>
-
-	<header>
 		
-		<a href="https://x5lcfd.github.io/" style="float: left;color:#ff3b30;">代码杂记</a>
+  		<link rel="stylesheet" href="/css/style.css">
+		<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Libre+Baskerville:400,400i,700">
+		
+		<link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+		<link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+		
+		<link href="/index.xml" rel="alternate" type="application/rss+xml" title="编程杂记" />
+	</head>
+
+    <body>
+        		<nav class="nav">
+			<div class="nav-container">
+				<a href="/">
+					<h2 class="nav-title">编程杂记</h2>
+				</a>
+				<ul>
+    <li><a href="/about">About</a></li>
+    <li><a href="/">Posts</a></li>
+</ul>
+			</div>
+		</nav>
+
+        
+
+<main>
+	
+
+
+	<div class="catalogue">
+		
+			<a href="#ZgotmplZ" class="catalogue-item">
+    <div>
+        <time datetime="2019-05-16 03:04:53 &#43;0800 CST" class="catalogue-time">May 16, 2019</time>
+        <h1 class="catalogue-title">软光渲流程</h1>
+        <div class="catalogue-line"></div>
+
+        <p>
+            软光渲流程 场景管理系统识别并创建那些可见的物体. 当所有的物体都创建完毕, 我们遍历每个物体上的几何图元并把他们送往渲染器去绘制图像.
+void DrawElements() { ApplyVertexShader(); (this-&gt;*m_aoDrawFunction[m_pkGeometry-&gt;Type])(); }  Vertex Shaders 三角形每个点都有位置及一些其他的信息. 假设我们使用动态光照(dynamic lighting), 不仅要计算每个点的点发现, 还需要点的颜色值, 实际上这些颜色值可能还会与贴图的颜色值混合, 这样做点里面又需要贴图的UV坐标了.
+一般来说传入 Vertex Program 的是模型空间的坐标, 但并非必须. 该程序最低限度地计算裁剪空间里的点坐标, 法线以及其他的属性, 其结果输出到后面的剪裁和光栅化阶段.
+void VertexColor3VProgram( in float4 kModelPosition : POSITION, in float3 kModelColor : COLOR, out float4 kClipPosition : POSITION, out float3 kVertexColor : COLOR, uniform float4x4 WVPMatrix) { kClipPosition = mul(kModelPosition, WVPMatrix); kVertexColor = kModelColor; }  上述程序有两个输入(模型空间点坐标, 点色值), 两个输出(剪裁空间点坐标, 点色值), 其中WVPMatrix 表示齐次变换(从模型空间到剪裁空间).
+        </p>
+    </div>
+</a>
+
+		
+			<a href="#ZgotmplZ" class="catalogue-item">
+    <div>
+        <time datetime="2019-02-20 02:40:18 &#43;0800 CST" class="catalogue-time">February 20, 2019</time>
+        <h1 class="catalogue-title">辐射度量学</h1>
+        <div class="catalogue-line"></div>
+
+        <p>
+            辐射度量学是研究电磁辐射在环境中如何传播的.
+介绍电磁辐射的四个关键量:
+ Flux (辐射通量 Intensity (辐射强度 Irradiance (辐照度 Radiance (辐射率  认识一个概念 光谱能量分布(spectral power distribution), 描述不同波长光数量(the amount of light)
+Radiometry (辐射度量学) 遵循基本的辐射度量的原则, 且仅需要几何光学这个级别, 波动光学不考虑.
+ 线性关系, 两个输入, 大部分只需要叠加 能量守恒, 光通过表面, 或者参与媒介 没有偏振 没有荧光或磷光 恒稳态  采用几何光学最大的缺点 衍射 和 干扰效应 很难实现.
+基本量 辐射能 (Radiant energy) 符号: $Q$, 单位: $J$, 理解为光子总的击中数
+$$ Q = \frac{hc}{\lambda} $$
+$h​$: 普朗克常量; $c​$: 光速; $\lambda​$: 光子的波长
+辐射通量(Radiant Flux) 符号:$\Phi$, 单位: $J \cdot s^{-1}$, 理解为光子每秒的击中数,
+        </p>
+    </div>
+</a>
+
+		
+	</div>
+	
+	<div class="pagination">
 		
 		
-		
-		<a href="https://x5lcfd.github.io/posts/index.xml" style="color:#777;float: right;"><svg
-				xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-				stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-				class="feather feather-rss">
-				<path d="M4 11a9 9 0 0 1 9 9"></path>
-				<path d="M4 4a16 16 0 0 1 16 16"></path>
-				<circle cx="5" cy="19" r="1"></circle>
-			</svg></a>
-	</header>
-
-<div class="content">
-    <h1> Posts</h1>
-    
-    
-    <p>
-        <aside>May 16, 2019</aside>
-        <a href="https://x5lcfd.github.io/posts/pipeline/">软光渲流程</a>
-    </p>
-    
-    
-    
-    <p>
-        <aside>February 20, 2019</aside>
-        <a href="https://x5lcfd.github.io/posts/radiometry/">辐射度量学</a>
-    </p>
-    
-    
-</div>
+	
+		<span>1</span>
+	</div>
+</main>
 
 
+        		<footer>
+			<span>
+			&copy; <time datetime="2019-08-10 00:15:39.4265368 &#43;0800 CST m=&#43;0.098002501">2019</time> . Made with <a href='https://gohugo.io'>Hugo</a> using the <a href='https://github.com/EmielH/tale-hugo/'>Tale</a> theme.
+			</span>
+		</footer>
 
-<footer>
-	<p>&copy; 2019 All rights reserved.</p>
-</footer>
-</body>
+    </body>
 </html>

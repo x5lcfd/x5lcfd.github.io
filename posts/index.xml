@@ -1,372 +1,43 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes" ?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Posts on 代码杂记</title>
-    <link>https://x5lcfd.github.io/posts/</link>
-    <description>Recent content in Posts on 代码杂记</description>
+    <title>Posts on 编程杂记</title>
+    <link>localhost:1313/posts/</link>
+    <description>Recent content in Posts on 编程杂记</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <lastBuildDate>Thu, 16 May 2019 03:04:53 +0800</lastBuildDate>
     
-        <atom:link href="https://x5lcfd.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="localhost:1313/posts/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
       <title>软光渲流程</title>
-      <link>https://x5lcfd.github.io/posts/pipeline/</link>
+      <link>localhost:1313/posts/pipeline/</link>
       <pubDate>Thu, 16 May 2019 03:04:53 +0800</pubDate>
       
-      <guid>https://x5lcfd.github.io/posts/pipeline/</guid>
-      <description>
-
-&lt;h1 id=&#34;软光渲流程&#34;&gt;软光渲流程&lt;/h1&gt;
-
-&lt;p&gt;场景管理系统识别并创建那些&lt;strong&gt;可见&lt;/strong&gt;的物体. 当所有的物体都创建完毕, 我们遍历每个物体上的几何图元并把他们送往渲染器去绘制图像.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void DrawElements()
-{
-    ApplyVertexShader();
-    (this-&amp;gt;*m_aoDrawFunction[m_pkGeometry-&amp;gt;Type])();
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;vertex-shaders&#34;&gt;Vertex Shaders&lt;/h2&gt;
-
-&lt;p&gt;三角形每个点都有&lt;strong&gt;位置&lt;/strong&gt;及一些其他的信息. 假设我们使用动态光照(dynamic lighting), 不仅要计算每个点的点发现, 还需要点的颜色值, 实际上这些颜色值可能还会与贴图的颜色值混合, 这样做点里面又需要贴图的UV坐标了.&lt;/p&gt;
-
-&lt;p&gt;一般来说传入 Vertex Program 的是模型空间的坐标, 但并非必须. 该程序最低限度地计算裁剪空间里的点坐标, 法线以及其他的属性, 其结果输出到后面的剪裁和光栅化阶段.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-cg&#34;&gt;void VertexColor3VProgram(
-    in float4 kModelPosition : POSITION,
-    in float3 kModelColor : COLOR,
-    out float4 kClipPosition : POSITION,
-    out float3 kVertexColor : COLOR,
-    uniform float4x4 WVPMatrix)
-{
-    kClipPosition = mul(kModelPosition, WVPMatrix);
-    kVertexColor = kModelColor;
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;上述程序有两个输入(模型空间点坐标, 点色值), 两个输出(剪裁空间点坐标, 点色值), 其中&lt;code&gt;WVPMatrix&lt;/code&gt; 表示齐次变换(从模型空间到剪裁空间).&lt;/p&gt;
-
-&lt;p&gt;第一行, 坐标变换,&lt;/p&gt;
-
-&lt;p&gt;$$
-\begin{align*}
-\boldsymbol{H}_ {wvp} &amp;amp;= \boldsymbol{H}_ {world} \boldsymbol{H}_ {view} \boldsymbol{H}_ {proj}
-\newline
-\boldsymbol{X}_ {clip} &amp;amp;= \boldsymbol{X}_ {model}\boldsymbol{H}_ {wvp}
-\end{align*}
-$$&lt;/p&gt;
-
-&lt;p&gt;其中 $\boldsymbol{X}_{model}$ 是 $1 \times 4$ 的向量, $w$ 分量值为 $1$,&lt;/p&gt;
-
-&lt;p&gt;第二行, 直接传递点的颜色值.&lt;/p&gt;
-
-&lt;h4 id=&#34;question&#34;&gt;Question&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt;这里的信息是不是每次都要全部计算出来呢?&lt;/li&gt;
-&lt;li&gt;什么是 动态光照? 静态光照呢?&lt;/li&gt;
-&lt;li&gt;传入模型空间坐标并非必须?&lt;/li&gt;
-&lt;li&gt;如何最低限度计算?&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;back-face-culling&#34;&gt;Back-Face Culling&lt;/h2&gt;
-
-&lt;p&gt;背面剔除是可选项, 如果背面剔除被禁用, 那么将直接进入剪裁阶段, 启用则会剔除所有背面三角形. 然而一些原因也会使前面的三角形被剔除.&lt;/p&gt;
-
-&lt;p&gt;$$
-\begin{align*}
-n &amp;amp;= (\boldsymbol{P}_1 - \boldsymbol{P}_0) \times (\boldsymbol{P}_2 - \boldsymbol{P}_0)
-\newline
-\delta &amp;amp;= (\boldsymbol{E} - \boldsymbol{P}_0) \cdot n &amp;gt; 0
-\end{align*}
-$$&lt;/p&gt;
-
-&lt;p&gt;$d&#39;$ 分量方向(视见方向)的偏移会导致上式错误的结果, 这里采用 $(r&#39;, u&#39;, w&#39;)$,&lt;/p&gt;
-
-&lt;p&gt;$$
-\begin{align*}
-\boldsymbol{E}_1 &amp;amp;= (r_1&#39; - r_0&#39;, u_1&#39;, - u_0&#39;, w_1&#39; - w_0&#39;), \newline
-\boldsymbol{E}_2 &amp;amp;= (r_2&#39; - r_0&#39;, u_2&#39;, - u_0&#39;, w_2&#39; - w_0&#39;), \newline
-\boldsymbol{N} &amp;amp;= \boldsymbol{E}_1 \times \boldsymbol{E}_2, \newline
-\delta_1 &amp;amp;= \sigma(\boldsymbol{N} \cdot (r_0&#39;, u_0&#39;, w_0&#39;))
-\end{align*}
-$$&lt;/p&gt;
-
-&lt;p&gt;等价于以下行列式,&lt;/p&gt;
-
-&lt;p&gt;$$
-\delta_1 = \sigma det
-\left[ \begin{array}{ccc}
-r_0&#39; &amp;amp; u_0&#39; &amp;amp; w_0&#39; \newline
-r_1&#39; &amp;amp; u_1&#39; &amp;amp; w_1&#39; \newline
-r_2&#39; &amp;amp; u_2&#39; &amp;amp; w_2&#39;
-\end{array} \right] =
-\sigma(w_0&#39;(r_1&#39;u_2&#39; - r_2&#39;u_1&#39;) - w_1&#39;(r_0&#39;u_2&#39; - r_2&#39;u_0&#39;) + w_2&#39;(r_0&#39;u_1&#39; - r_1&#39;u_0&#39;))
-$$&lt;/p&gt;
-
-&lt;p&gt;浮点数的舍入误差同样也会导致错误的分类, &lt;strong&gt;这里没看懂&lt;/strong&gt;,&lt;/p&gt;
-
-&lt;h2 id=&#34;clipping&#34;&gt;Clipping&lt;/h2&gt;
-
-&lt;p&gt;一旦三角形被确认为前置的(front-facing), 接下来就会对其在视锥体内进行剪裁. 剪裁有两种算法:&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;逐面剪裁&lt;/li&gt;
-&lt;li&gt;多边形相交剪裁&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;多边形剪裁需要维护一个凸多边形结构, 该多边形与视锥体的六个面做剪裁.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;void ClipPolygon(int&amp;amp; riQuantity,
-                 int aiIndex[SOFT_MAX_CLIP_INDICES],
-                 int aiEdge[SOFT_MAX_CLIP_INDICES]);
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;h2 id=&#34;rasterizing&#34;&gt;Rasterizing&lt;/h2&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int iNumTriangles = iQuantity - 2;
-for (int j = 1; j &amp;lt;= iNumTriangles; ++j)
-{
-    RasterizeTriangle(aiIndex[0], aiIndex[1], aiIndex[j+1]);
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;&lt;code&gt;RasterizeTriangle&lt;/code&gt; 函数负责画每个三角形所包含的像素. 函数的第一部分访问剪裁空间三角形点的坐标, 且将他们投影到屏幕空间.&lt;/p&gt;
-
-&lt;h2 id=&#34;edge-buffers&#34;&gt;Edge Buffers&lt;/h2&gt;
-
-&lt;p&gt;边缓冲区算法旨在确定每一条扫描线上的起始和结束 x 值, 扫描线包含了三角形覆盖的像素. 需要特别注意两三角形共边的情况,&lt;/p&gt;
-
-&lt;p&gt;Bresenham 直线算法不能保证每次覆盖的像素一致,&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;中点算法&lt;/li&gt;
-&lt;li&gt;根据最小 y 值端点和最大 y 值端点开始遍历&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;scan-line-processing&#34;&gt;Scan Line Processing&lt;/h2&gt;
-
-&lt;p&gt;输入的是一个三角形的 edge buffer, 输出是这个三角形覆盖的像素点在屏幕上的位置, 色值.&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&#34;language-cpp&#34;&gt;int ymin = &amp;lt;minimum y for edge buffers&amp;gt;;
-int ymax = &amp;lt;maximum y for edge buffers&amp;gt;;
-
-for (y = ymin; y &amp;lt;= ymax; ++y)
-{
-    int xmin = &amp;lt;minimum x for scan line y&amp;gt;;
-    int xmax = &amp;lt;maximum x for scan line y&amp;gt;;
-    
-    draw the pixel(xmin, y);
-    
-    interpolate attributes at (x, y) for xmin &amp;lt; x &amp;lt; xmax;
-    
-    for (x = xmin + 1; x &amp;lt; xmax; ++x)
-    {
-        draw the pixel(x, y);
-    }
-    
-    draw the pixel (xmax, y);
-}
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;扫面线算法的问题, 共享边绘制两次, 不透明的还好, 如果是透明的存在 Alpha 混合的问题, 视觉效果会很奇怪. 其中的一个解决方案是 &lt;strong&gt;Top Left Rule&lt;/strong&gt; (当像素点与多边形的左或上边重合时, 填充时需要着色; 相反属于右或下边, 则不需要着色).&lt;/p&gt;
-
-&lt;h4 id=&#34;question-1&#34;&gt;Question&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt;DirectX 和 OpenGL 的这块的机制是什么样的?&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;pixel-shaders&#34;&gt;Pixel Shaders&lt;/h2&gt;
-
-&lt;p&gt;像素着色器作用于当前像素, 输入数据有,&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;来自 Vertex Program 后的光栅化的和插值的输出数据,&lt;/li&gt;
-&lt;li&gt;达成期望视觉效果所需的常量&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;像素着色器须返回 RGBA 格式的颜色值.&lt;/p&gt;
-
-&lt;p&gt;像素着色器往往是渲染系统的瓶颈, 且多数系统对填充率有所限制, 并占用大量的像素处理时间.&lt;/p&gt;
-
-&lt;h4 id=&#34;question-2&#34;&gt;Question&lt;/h4&gt;
-
-&lt;ol&gt;
-&lt;li&gt;Vertex Program 光栅化和插值的输出数据是什么样的?&lt;/li&gt;
-&lt;li&gt;填充率是什么?&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&#34;stencil-buffering&#34;&gt;Stencil Buffering&lt;/h2&gt;
-
-&lt;p&gt;模板缓冲区存储和检索像素信息, 通过像素模板缓冲区数据值与参考值之间的比较, 可有效地剔除或保留相关像素.&lt;/p&gt;
-
-&lt;p&gt;模板缓冲区用于遮罩图像中的像素, 以产生特殊效果.  掩码控制是否绘制像素.&lt;/p&gt;
-
-&lt;h2 id=&#34;depth-buffering&#34;&gt;Depth Buffering&lt;/h2&gt;
-
-&lt;p&gt;深度缓冲区存储深度信息, 以控制渲染哪些多边形区域&lt;/p&gt;
-
-&lt;h2 id=&#34;alpha-blending&#34;&gt;Alpha Blending&lt;/h2&gt;
-
-&lt;p&gt;一旦像素通过模板测试和深度测试, 即可对其执行绘制操作. Pixel Program 被调用后将生成源颜色值; 当前颜色缓冲区中的数据值则称作目标颜色值. 如果 Alpha 混合被关闭, 那么直接将源颜色值写入 Color Buffer; 反之, 则根据混合参数将源颜色值与目标颜色值进行混合.&lt;/p&gt;
-
-&lt;h2 id=&#34;color-masking&#34;&gt;Color Masking&lt;/h2&gt;
-
-&lt;p&gt;颜色蒙版&lt;/p&gt;
-</description>
+      <guid>localhost:1313/posts/pipeline/</guid>
+      <description>软光渲流程 场景管理系统识别并创建那些可见的物体. 当所有的物体都创建完毕, 我们遍历每个物体上的几何图元并把他们送往渲染器去绘制图像.
+void DrawElements() { ApplyVertexShader(); (this-&amp;gt;*m_aoDrawFunction[m_pkGeometry-&amp;gt;Type])(); }  Vertex Shaders 三角形每个点都有位置及一些其他的信息. 假设我们使用动态光照(dynamic lighting), 不仅要计算每个点的点发现, 还需要点的颜色值, 实际上这些颜色值可能还会与贴图的颜色值混合, 这样做点里面又需要贴图的UV坐标了.
+一般来说传入 Vertex Program 的是模型空间的坐标, 但并非必须. 该程序最低限度地计算裁剪空间里的点坐标, 法线以及其他的属性, 其结果输出到后面的剪裁和光栅化阶段.
+void VertexColor3VProgram( in float4 kModelPosition : POSITION, in float3 kModelColor : COLOR, out float4 kClipPosition : POSITION, out float3 kVertexColor : COLOR, uniform float4x4 WVPMatrix) { kClipPosition = mul(kModelPosition, WVPMatrix); kVertexColor = kModelColor; }  上述程序有两个输入(模型空间点坐标, 点色值), 两个输出(剪裁空间点坐标, 点色值), 其中WVPMatrix 表示齐次变换(从模型空间到剪裁空间).</description>
     </item>
     
     <item>
       <title>辐射度量学</title>
-      <link>https://x5lcfd.github.io/posts/radiometry/</link>
+      <link>localhost:1313/posts/radiometry/</link>
       <pubDate>Wed, 20 Feb 2019 02:40:18 +0800</pubDate>
       
-      <guid>https://x5lcfd.github.io/posts/radiometry/</guid>
-      <description>
-
-&lt;p&gt;辐射度量学是研究电磁辐射在环境中如何传播的.&lt;/p&gt;
-
-&lt;p&gt;介绍电磁辐射的四个关键量:&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;Flux (辐射通量&lt;/li&gt;
-&lt;li&gt;Intensity (辐射强度&lt;/li&gt;
-&lt;li&gt;Irradiance (辐照度&lt;/li&gt;
-&lt;li&gt;Radiance (辐射率&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;认识一个概念 光谱能量分布(spectral power distribution), 描述不同波长光数量(the amount of light)&lt;/p&gt;
-
-&lt;h2 id=&#34;radiometry-辐射度量学&#34;&gt;Radiometry (辐射度量学)&lt;/h2&gt;
-
-&lt;p&gt;遵循基本的辐射度量的原则, 且仅需要几何光学这个级别,  波动光学不考虑.&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;线性关系, 两个输入, 大部分只需要叠加&lt;/li&gt;
-&lt;li&gt;能量守恒, 光通过表面, 或者参与媒介&lt;/li&gt;
-&lt;li&gt;没有偏振&lt;/li&gt;
-&lt;li&gt;没有荧光或磷光&lt;/li&gt;
-&lt;li&gt;恒稳态&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;采用几何光学最大的缺点 衍射 和 干扰效应 很难实现.&lt;/p&gt;
-
-&lt;h3 id=&#34;基本量&#34;&gt;基本量&lt;/h3&gt;
-
-&lt;h4 id=&#34;辐射能-radiant-energy&#34;&gt;辐射能 (Radiant energy)&lt;/h4&gt;
-
-&lt;p&gt;符号: $Q$, 单位: $J$, 理解为光子总的击中数&lt;/p&gt;
-
-&lt;p&gt;$$
-Q = \frac{hc}{\lambda}
-$$&lt;/p&gt;
-
-&lt;p&gt;$h​$: 普朗克常量; $c​$: 光速; $\lambda​$: 光子的波长&lt;/p&gt;
-
-&lt;h4 id=&#34;辐射通量-radiant-flux&#34;&gt;辐射通量(Radiant Flux)&lt;/h4&gt;
-
-&lt;p&gt;符号:$\Phi$, 单位: $J \cdot s^{-1}$, 理解为光子每秒的击中数,&lt;/p&gt;
-
-&lt;p&gt;$$
-\Phi = \lim_ {\Delta t \to 0} \frac{\Delta Q}{\Delta t} = \frac{dQ}{dt}.
-$$&lt;/p&gt;
-
-&lt;p&gt;在时间段内积分可获得该时间段内总的辐射能,&lt;/p&gt;
-
-&lt;p&gt;$$
-Q = \int_ {t_0}^{t1}\Phi(t)dt.
-$$&lt;/p&gt;
-
-&lt;h4 id=&#34;辐照度-又称辐射入射度-irradiance&#34;&gt;辐照度, 又称辐射入射度 (Irradiance)&lt;/h4&gt;
-
-&lt;p&gt;符号: $E$, 单位: $J \cdot s^{-1} \cdot m^{-2}$, 理解为光子每秒每单位面积的击中数,&lt;/p&gt;
-
-&lt;p&gt;$$
-E(p) = \lim_{\Delta A \to 0} \frac{\Delta \Phi (p)}{\Delta A} = \frac{d \Phi(p)}{dA}.
-$$&lt;/p&gt;
-
-&lt;blockquote&gt;
-&lt;p&gt;Radiant flux &lt;em&gt;received&lt;/em&gt; by a &lt;em&gt;surface&lt;/em&gt; per unit area. This is sometimes also confusingly called &amp;quot;intensity&amp;quot;.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h4 id=&#34;辐出度-又称辐射出射度-radiant-exitance&#34;&gt;辐出度, 又称辐射出射度(Radiant Exitance)&lt;/h4&gt;
-
-&lt;p&gt;符号: $M$, 单位: $J \cdot s^{-1} \cdot m^{-2}$, 理解为光子每秒每单位面积射出数,&lt;/p&gt;
-
-&lt;p&gt;$$
-\begin{align*}
-\Phi &amp;amp;= \int_{A} E(p) dA. \newline
-E &amp;amp;= \frac{\Phi cos\theta}{A}
-\end{align*}
-$$&lt;/p&gt;
-
-&lt;p&gt;图像生成是估计图像中每个点的辐照度.&lt;/p&gt;
-
-&lt;h4 id=&#34;辐射强度-radiant-intensity&#34;&gt;辐射强度(Radiant Intensity)&lt;/h4&gt;
-
-&lt;p&gt;符号: $I​$, 单位: $J \cdot s^{-1} \cdot sr^{-1}$,&lt;/p&gt;
-
-&lt;p&gt;$$
-\begin{align*}
-I &amp;amp;= \lim_{\Delta \omega \to 0}\frac{\Delta \Phi}{\Delta \omega} = \frac{d\Phi}{d\omega}.
-\newline
-\Phi &amp;amp;= \int_{\Omega} I(\omega)d\omega.
-\end{align*}
-$$&lt;/p&gt;
-
-&lt;h4 id=&#34;辐射率-radiance&#34;&gt;辐射率(Radiance)&lt;/h4&gt;
-
-&lt;p&gt;每单位立体角每单位投射表面的辐射通量 $W \cdot sr^{-1} \cdot m^{-2}$.&lt;br /&gt;
-辐照度和辐出度给我们在 $p$ 点微分曲面上的微分能量, 但是这两个量都不涉及到能量在方向上的分布, 辐射率衡量立体角上的辐照度和辐出度.&lt;/p&gt;
-
-&lt;p&gt;$$
-\begin{align*}
-L(p, \omega) &amp;amp;= \lim_{\Delta\omega \to 0}\frac{\Delta E_ \omega(p)}{\Delta\omega} = \frac{dE_\omega(p)}{d\omega}.\newline
-L &amp;amp;= \frac{d\Phi}{d\omega dA^\perp}
-\end{align*}
-$$&lt;/p&gt;
-
-&lt;h3 id=&#34;入射-出射-辐射率函数-incident-exitant-radiance-functions&#34;&gt;[入射/出射] 辐射率函数(Incident/Exitant Radiance Functions)&lt;/h3&gt;
-
-&lt;h3 id=&#34;亮度和光度测定学-luminance-and-photometry&#34;&gt;亮度和光度测定学(Luminance and Photometry)&lt;/h3&gt;
-
-&lt;p&gt;所有的辐射度的度量都有对应的光度度量, 光度测定学研究的是人类视觉系统可见的电磁辐射.&lt;/p&gt;
-
-&lt;p&gt;&lt;strong&gt;Spectral response curve $V(\lambda)$&lt;/strong&gt; 描述了人眼灵敏度与各种不同波长之间的关系. &lt;strong&gt;Luminance $Y$&lt;/strong&gt; 描述一个光谱能量分布对观察者来说的明亮程度.&lt;/p&gt;
-
-&lt;p&gt;$$
-\begin{align*}
-Y = \int_{\lambda}L(\lambda)V(\lambda)d\lambda.\newline
-Y = 683 \int_{\lambda}L(\lambda)Y(\lambda)d\lambda.
-\end{align*}
-$$&lt;/p&gt;
-
-&lt;h3 id=&#34;辐射积分-radiometric-integrals&#34;&gt;辐射积分(Radiometric Integrals)&lt;/h3&gt;
-
-&lt;p&gt;在 $p$ 点且表面法线为 $n$ 出的辐照度就是 在 $\Omega$ 方向集合上的辐射率.&lt;/p&gt;
-
-&lt;p&gt;$$
-E(p, n) = \int_ {\Omega} L_ i(p, \omega)\vert cos\theta \vert d\omega,
-$$&lt;/p&gt;
-
-&lt;p&gt;其中 $L_i(p, w)$是入射辐射率函数,  $cos\theta$ 在此处的意义与 $dA^\perp$ 在辐射率中的定义一致, $\theta$ 是 $\omega$ 与表面发现 $n$ 的夹角.&lt;/p&gt;
-
-&lt;h4 id=&#34;投射立体角上的积分&#34;&gt;投射立体角上的积分&lt;/h4&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;strong&gt;References&lt;/strong&gt;&lt;/p&gt;
-
-&lt;ol&gt;
-&lt;li&gt;&lt;a href=&#34;http://15462.courses.cs.cmu.edu/fall2018/lecture/radiometry&#34;&gt;http://15462.courses.cs.cmu.edu/fall2018/lecture/radiometry&lt;/a&gt;&lt;/li&gt;
-&lt;li&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Solid_angle&#34;&gt;https://en.wikipedia.org/wiki/Solid_angle&lt;/a&gt;&lt;/li&gt;
-&lt;/ol&gt;
-</description>
+      <guid>localhost:1313/posts/radiometry/</guid>
+      <description>辐射度量学是研究电磁辐射在环境中如何传播的.
+介绍电磁辐射的四个关键量:
+ Flux (辐射通量 Intensity (辐射强度 Irradiance (辐照度 Radiance (辐射率  认识一个概念 光谱能量分布(spectral power distribution), 描述不同波长光数量(the amount of light)
+Radiometry (辐射度量学) 遵循基本的辐射度量的原则, 且仅需要几何光学这个级别, 波动光学不考虑.
+ 线性关系, 两个输入, 大部分只需要叠加 能量守恒, 光通过表面, 或者参与媒介 没有偏振 没有荧光或磷光 恒稳态  采用几何光学最大的缺点 衍射 和 干扰效应 很难实现.
+基本量 辐射能 (Radiant energy) 符号: $Q$, 单位: $J$, 理解为光子总的击中数
+$$ Q = \frac{hc}{\lambda} $$
+$h​$: 普朗克常量; $c​$: 光速; $\lambda​$: 光子的波长
+辐射通量(Radiant Flux) 符号:$\Phi$, 单位: $J \cdot s^{-1}$, 理解为光子每秒的击中数,</description>
     </item>
     
   </channel>
